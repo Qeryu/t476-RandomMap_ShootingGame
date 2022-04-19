@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
 public class Utilities : MonoBehaviour
 {
     //工具类重新排序后返回瓦片集合,洗牌算法：swap

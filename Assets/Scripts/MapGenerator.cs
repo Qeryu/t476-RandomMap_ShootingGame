@@ -6,36 +6,25 @@ using System;
 
 public class MapGenerator : MonoBehaviour
 {
-    public static MapGenerator instance; // static关键字。 单例模式 
-
-    //使用Awake()确保单例模式在使用前已被初始化
-    void Awake()
-    {
-        instance = this;
-    }
+    public static MapGenerator instance;
     [Header("瓦片")]
     public GameObject tilePrefab;
     public Vector2 mapSize;
-    public Transform mapHolder;
+   // public Transform mapHolder;//这个在下次实例时要删除！！！
     [Range(0, 1)] public float outlinePrecent;//瓦片之间留有缝隙去调整
     [Header("障碍物")]
     public GameObject obstaclePrefab;
     //public float obstacleCount;
     public Color foregroundColor, backgroundColor;
     public float minHeight, maxHeight;
-
     public List<Coordiate> allTilesCoord = new List<Coordiate>();
     List<Coordiate> allOpenCoords;
     private Queue<Coordiate> shuffledQueue;//洗牌队列
     private Queue<Coordiate> shuffledOpenQueue;//洗除了障碍物以外的点的队列
     [Header("地图连通性")]
-
-
     [Range(0, 1)] public float obsPercent;
-    
     private Coordiate mapCenter;//人物在中心点生成，这也是洪水起点
     bool[,] mapObstacles;//该位置是否含有障碍物
-    //自己加的
     //we can store allof the tiles .sothat we can access theis positions！！！
     Transform[,] tileMap;
    // Coordiate[] mapNotHaveObs;
@@ -49,29 +38,47 @@ public class MapGenerator : MonoBehaviour
     public Map[] maps;
     Map currentMap;
     public int mapIndex;
+    [Header("敌人颜色")]
+    public Material m_material;
+    public GameObject m_object;
 
-    
-    
+    void Awake()
+    {
+        instance = this;
+        Init();
+        FindObjectOfType<Spawner>().OnNewWave += OnNewWave;//懂了，找到组件类型
+        //Init();
+         m_object= GameObject.FindGameObjectWithTag("enemyColor");
+        //仙这么一写
+         m_material = m_object.GetComponent<Renderer>().sharedMaterial;
+        m_material.color = foregroundColor;
 
-    
-
+    }
     private void Start()
     {
-        ChooseAMap();
-
-        FindObjectOfType<Spawner>().OnNewWave += OnNewWave;
-        GenerateMap();
-        Init();
+        //ChooseAMap();
+        //FindObjectOfType<Spawner>().OnNewWave += OnNewWave;
+       // GenerateMap();
+       // Init();
 
     }
     void OnNewWave(int waveNumber)
     {
-        mapIndex = waveNumber - 1;
+        //mapIndex = waveNumber - 1;
+        //if (GameObject.FindGameObjectWithTag("Player"))这样也不行
+        //    player.transform.position = getTileFromPosition(Vector3.zero).position + Vector3.up * 3;
+        ChooseAMap();
         GenerateMap();
+        //在这里更改enemy预制体的颜色 1直接改预制体2改材质球sharedmaterial选2吧
+        m_material.color = foregroundColor;
+
+     //   Init();
+
+
     }
     private void ChooseAMap()
     {
-        currentMap = maps[UnityEngine.Random.Range(0, mapIndex)];
+        currentMap = maps[UnityEngine.Random.Range(0, maps.Length)];//洗牌
         mapSize = currentMap._mapSize;
         minHeight = currentMap._minObsHeight;
         maxHeight = currentMap._maxObsHeight;
@@ -107,7 +114,25 @@ public class MapGenerator : MonoBehaviour
 
     private void Init()
     {
-        Instantiate(player, new Vector3(-mapSize.x / 2 + 0.5f + mapCenter.x, 0.5f, -mapSize.y / 2 + 0.5f + mapCenter.y),Quaternion.identity);
+
+        if (!GameObject.FindGameObjectWithTag("Player"))
+            Instantiate(player, new Vector3(-mapSize.x / 2 + 0.5f + mapCenter.x, 0.5f, -mapSize.y / 2 + 0.5f + mapCenter.y), Quaternion.identity);
+        else
+        {
+           // Debug.Log("111");
+            //还是没有解决我这个问题
+            //问题在于我的物体一开始就处于显示状态，这样移动只移动了MeshFilter,物体本身的Mesh并没有移动，依旧无用
+            //player.SetActive(false);
+            //   player.GetComponent<BoxCollider>().enabled=false;
+            //为什么在这里不行这真的是我很大的一个疑问
+          //  player.transform.position= getTileFromPosition(Vector3.zero).position + Vector3.up * 0.5;
+            //更改单个需要的操作
+            //  Vector3 pos = player.transform.localPosition;
+            //   player.transform.position= new Vector3(-mapSize.x / 2 + 0.5f + mapCenter.x, 0.5f, -mapSize.y / 2 + 0.5f + mapCenter.y);
+            // player.transform.localPosition = pos;
+            //  player.GetComponent<BoxCollider>().enabled = true;
+            // player.SetActive(true);
+        }
     }
     //use the Transform[,]
     public Transform getTileFromPosition(Vector3 position)
@@ -122,17 +147,33 @@ public class MapGenerator : MonoBehaviour
     private void GenerateMap()
     {
         tileMap = new Transform[(int)mapSize.x,(int)mapSize.y];
-        //生成空气边界墙
-        GameObject Wallup = Instantiate(navMeshObsPrefab, Vector3.forward*(mapMaxSize.y + mapSize.y) / 4,Quaternion.identity);
+        //重新生成空气边界墙，并摧毁之前的
+       
+        //重要!!!!,要重新在这里面初始化
+        //是这里destoy之前的然后new了一个新的
+        allTilesCoord = new List<Coordiate>();
+        string holderName = "mapHolder";
+        if (transform.Find(holderName))
+        {
+            DestroyImmediate(transform.Find(holderName).gameObject);
+            
+        }
+        
+        Transform mapHolder = new GameObject(holderName).transform;
+        mapHolder.parent = transform;
+        GameObject Wallup = Instantiate(navMeshObsPrefab, Vector3.forward * (mapMaxSize.y + mapSize.y) / 4, Quaternion.identity);
         //大小,要理解那張图，注意它的y才是他的高
-        Wallup.transform.localScale = new Vector3(mapSize.x, 5, mapMaxSize.y / 2 - mapSize.y/2);
+        Wallup.transform.parent = mapHolder;
+        Wallup.transform.localScale = new Vector3(mapSize.x, 5, mapMaxSize.y / 2 - mapSize.y / 2);
         GameObject Walldown = Instantiate(navMeshObsPrefab, Vector3.back * (mapMaxSize.y + mapSize.y) / 4, Quaternion.identity);
-        Walldown.transform.localScale = new Vector3(mapSize.x, 5, mapMaxSize.y / 2 - mapSize.y/2);
-        GameObject Wallleft = Instantiate(navMeshObsPrefab, Vector3.left* (mapMaxSize.x + mapSize.x) / 4, Quaternion.identity);
-        Wallleft.transform.localScale = new Vector3(mapMaxSize.x / 2 - mapSize.x/2, 5,mapSize.y );
+        Walldown.transform.parent = mapHolder;
+        Walldown.transform.localScale = new Vector3(mapSize.x, 5, mapMaxSize.y / 2 - mapSize.y / 2);
+        GameObject Wallleft = Instantiate(navMeshObsPrefab, Vector3.left * (mapMaxSize.x + mapSize.x) / 4, Quaternion.identity);
+        Wallleft.transform.parent = mapHolder;
+        Wallleft.transform.localScale = new Vector3(mapMaxSize.x / 2 - mapSize.x / 2, 5, mapSize.y);
         GameObject Wallright = Instantiate(navMeshObsPrefab, Vector3.right * (mapMaxSize.x + mapSize.x) / 4, Quaternion.identity);
-        Wallright.transform.localScale = new Vector3(mapMaxSize.x / 2 - mapSize.x/2, 5, mapSize.y);
-
+        Wallright.transform.parent = mapHolder;
+        Wallright.transform.localScale = new Vector3(mapMaxSize.x / 2 - mapSize.x / 2, 5, mapSize.y);
 
         //生成瓦片地图
         for (int i = 0; i < mapSize.x; i++)
@@ -269,7 +310,7 @@ public struct Coordiate//坐标的意思
     public int y;
     public Coordiate(int _x, int _y)
     {
-        this.x = _x;
+        this.x = _x;                                                                                                                                                                 
         this.y = _y;
     }
     //重载运算符

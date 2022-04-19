@@ -8,6 +8,10 @@ public class Enemy : LivingEntity
 {
     public enum State {Idle,Chasing,Attacking};
     State currentState;
+
+    //敌人死亡效果
+    public GameObject deatheffect;
+    public float attackSpeed = 1f;//做个减速弹吧
     //配合navmeshagent使用
     private NavMeshAgent navMeshAgent;
     private Transform target;//追击player
@@ -20,13 +24,21 @@ public class Enemy : LivingEntity
     //攻击后player变色
     Material playerSkinMaterial;
     Color originalColor;
+    Material enemySkinMaterial;
+    Color originalEnemyColor;
     bool hasTarget;
+
+    bool changedSpeed;
+    float yanchiTime = 0;
+    float recoverTime = 0;
 
     protected override void Start()
     {
         base.Start();
         navMeshAgent = GetComponent<NavMeshAgent>();
-       
+        enemySkinMaterial = GetComponent<Renderer>().material;
+        originalEnemyColor = enemySkinMaterial.color;
+
         //代码严谨性
         currentState = State.Chasing;
         if (GameObject.FindGameObjectWithTag("Player") != null)
@@ -36,7 +48,71 @@ public class Enemy : LivingEntity
         //StartCoroutine(updatePath());
         Invoke("PlayerMaterialInvoke", 0.2f);
     }
+    public override void TakenHit(float damage, Vector3 hitPoint, Vector3 hitDirection)
+    {
+        AudioManager.instance.PlaySound("Impact", transform.position);//打到了
 
+        if (damage >= health)
+        {
+            AudioManager.instance.PlaySound("EnemyDeath", transform.position);
+            //  Destroy(Instantiate(deatheffect, hitPoint, transform.rotation) as GameObject, 2f);
+            //太要命了，方向越来越离谱
+            Destroy(Instantiate(deatheffect, hitPoint, Quaternion.FromToRotation(Vector3.forward, hitDirection)) as GameObject, 2f);
+        }
+        base.TakenHit(damage, hitPoint, hitDirection);
+    }
+    
+    public override void ChangeSpeed()
+    {
+        
+        changedSpeed = true;
+        navMeshAgent.enabled = false;
+        Debug.Log("jiansu2");
+        yanchiTime =3+Time.time;
+        attackSpeed = 0.5f;
+        enemySkinMaterial.color = Color.blue;
+       
+
+        StartCoroutine("WaitForSecond");
+
+    }
+    IEnumerator WaitForSecond()
+    {
+        //3s之前
+     //差不多还是好用的
+
+        yield return new WaitForSeconds(3);
+        //3s之后
+ 
+        if (yanchiTime <= Time.time)
+        {
+           
+            RecoverSpeed();
+         }
+      
+
+    }
+   
+    public override void RecoverSpeed()
+    {
+        Debug.Log("444");
+        navMeshAgent.enabled = true;
+        changedSpeed = false;
+        attackSpeed = 1f;
+        enemySkinMaterial.color = originalEnemyColor;
+
+    }
+    public void SetCharacteristics(float moveSpeed, float hitPower, float enemyHealth)
+    {
+       
+       //只能在Start函数和Awake函数中成功的改变nav速度数值，所以不改这个了
+        if (hasTarget)
+        {
+            damage = hitPower;
+        }
+        maxHealth = enemyHealth;
+        
+    }
     private void PlayerMaterialInvoke()
     {
         if (GameObject.FindGameObjectWithTag("Player"))
@@ -58,6 +134,15 @@ public class Enemy : LivingEntity
         currentState = State.Idle;
     }
     bool state = false;
+    /*
+    public void SetCharacteristics( Color skinColour)
+    {
+      
+      //  deathEffect.startColor = new Color(skinColour.r, skinColour.g, skinColour.b, 1);
+        skinMaterial = GetComponent<Renderer>().sharedmaterial;
+        skinMaterial.color = skinColour;
+        originalColour = skinMaterial.color;
+    }*/
     void Update()
     {
         
@@ -70,24 +155,34 @@ public class Enemy : LivingEntity
             
         }
 
-       
-        //用vector3.distance有点费，只需要在平面判断距离
-        float squareDstToTarget = (target.position - transform.position).sqrMagnitude;
-        if (squareDstToTarget < Mathf.Pow(attackDistanceThreshold,2))
+        if (hasTarget)
         {
-            if (Time.time >= nextAttackTime)
+            //用vector3.distance有点费，只需要在平面判断距离
+            float squareDstToTarget = (target.position - transform.position).sqrMagnitude;
+            if (squareDstToTarget < Mathf.Pow(attackDistanceThreshold, 2))
             {
-                //attack
-                StartCoroutine(Attack());
-                nextAttackTime = Time.time + AttackTime;
+                if (Time.time >= nextAttackTime)
+                {
+                    //attack
+                    AudioManager.instance.PlaySound("EnemyAttack", transform.position);
+                    StartCoroutine(Attack());
+                    nextAttackTime = Time.time + AttackTime;
+                }
             }
         }
-
-
+        //这里不在update有点难实现啊，在的话有点浪费了，而且这么写是错的,显然
+        //还是看看正经用协程这里怎么写改一改吧，困
+        /*
+        recoverTime = Time.time + yanchiTime / 1000;
+        if (changedSpeed&&yanchiTime<=0f)
+        {
+            RecoverSpeed();
+            recoverTime = Time.time + yanchiTime / 1000;
+        }*/
         //锲而不舍类敌人
-       // navMeshAgent.SetDestination(target.position);
+        // navMeshAgent.SetDestination(target.position);
         //摸鱼类敌人
-        
+
     }
     IEnumerator Attack()
     {
@@ -96,8 +191,8 @@ public class Enemy : LivingEntity
         Vector3 originalPosition = transform.position;
         Vector3 dirToTarget = (target.position - transform.position).normalized;
         Vector3 attackPosition = target.position-(dirToTarget*0.3f);
-        playerSkinMaterial.color = Color.red;//为什么这里时不时爆出一个找不到呢
-        float attackSpeed = 3f;
+        playerSkinMaterial.color = Color.red;
+
         bool hasAppliedDamage = false;
         //lerp
         float percent = 0;
@@ -106,7 +201,7 @@ public class Enemy : LivingEntity
             if (percent >= 0.5f && !hasAppliedDamage)
             {
                 hasAppliedDamage = true;
-                targetEntity.TakenDamage(damage);
+                targetEntity.TakenDamage(damage);//在这里决定玩家受伤和死亡，我想给玩家死亡也加个效果
             }
             percent += Time.deltaTime * attackSpeed;
             float interpolation = (-percent * percent + percent) * 4;

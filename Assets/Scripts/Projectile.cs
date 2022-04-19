@@ -5,15 +5,87 @@ using UnityEngine;
 
 public class Projectile : MonoBehaviour
 {
-    [SerializeField] private float shootSpeed=50.0f;
-    [SerializeField] private float damage = 1.0f;
+    Gun equippedGun;
+    [SerializeField] private float shootSpeed;
+    public float damage = 1.0f;
     [SerializeField] private float lifetime;
     public LayerMask collisionMask;
-    public float x, y, z;
+    public Color trailColour;
+     public float x, y, z;
     //public Transform originTransform;
+
+    //改用Physics.OverlapSphere做一下
+    float skinWidth = .1f;
+
+    void Start()
+    {
+        equippedGun = FindObjectOfType<Gun>();//
+        Destroy(gameObject, lifetime);
+        x = transform.position.x;//这些是不会随时间而动的
+        y = transform.position.y;
+        z = transform.position.z;
+
+        Collider[] initialCollisions = Physics.OverlapSphere(transform.position, .1f, collisionMask);
+        if (initialCollisions.Length > 0)
+        {
+            OnHitObject(initialCollisions[0], transform.position);
+        }
+
+        GetComponent<TrailRenderer>().material.SetColor("_TintColor", trailColour);
+    }
     
-    
-    private void Start()
+    public void SetSpeed(float newSpeed)
+    {
+        shootSpeed = newSpeed;
+    }
+
+    void Update()
+    {
+        float moveDistance = shootSpeed * Time.deltaTime;
+        CheckCollisions(moveDistance);
+        transform.Translate(-transform.forward * moveDistance);
+       // transform.Translate(Vector3.forward * moveDistance);
+    }
+
+
+    void CheckCollisions(float moveDistance)
+    {
+       // Ray ray = new Ray(transform.position, transform.forward);
+        Ray ray = new Ray(new Vector3(x, y, z), transform.up);
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit, moveDistance + skinWidth, collisionMask, QueryTriggerInteraction.Collide))
+        {
+            OnHitObject(hit.collider, hit.point);
+        }
+    }
+
+    void OnHitObject(Collider c, Vector3 hitPoint)
+    {
+        IDamageable damageableObject = c.GetComponent<IDamageable>();
+        
+        if (damageableObject != null)
+        {
+            //不对啊这个没转换成自身坐标系啊对于Transform.forward来说,它代表当前物体的物体坐标系的z轴在世界坐标系上的指向
+            //这太奇怪了
+         
+            
+            
+            damageableObject.TakenHit(damage, hitPoint, new Vector3(transform.up.x,-transform.up.y,transform.up.z));
+            Debug.Log(transform.up);
+            if (equippedGun.fireMode == Gun.FireMode.Single)
+            {
+                Debug.Log("jiansu ");
+                damageableObject.ChangeSpeed();
+                //减速三秒
+            }
+
+        }
+        GameObject.Destroy(gameObject);
+    }
+}
+
+    /*private void Start()
     {
         Destroy(gameObject, lifetime);
         x = transform.position.x;//这些是不会随时间而动的
@@ -60,7 +132,7 @@ public class Projectile : MonoBehaviour
         }
     }
 
-    private void HitEnemy(RaycastHit _hitInfo)
+   private void HitEnemy(RaycastHit _hitInfo)
     {
         //获取敌人的IDamageable接口中的TakenDamage方法来对敌人造成伤害
        
@@ -72,5 +144,5 @@ public class Projectile : MonoBehaviour
             //Destroy(gameObject);注意销毁位置
         }
         Destroy(gameObject);
-    }
-}
+    }*/
+

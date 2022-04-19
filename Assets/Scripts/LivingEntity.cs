@@ -23,7 +23,8 @@ public class LivingEntity : MonoBehaviour,IDamageable
     }
 
     //触发事件的逻辑
-    protected void Die()
+    [ContextMenu("Self Destruct")]//创建一个上下文菜单用来右键自毁，cool
+    public virtual void Die()
     {
         isDead = true;
         Destroy(gameObject);
@@ -33,12 +34,27 @@ public class LivingEntity : MonoBehaviour,IDamageable
         //如果是敌人，判断场上剩余敌人数量，安排下一波
     }
 
-    public void TakenDamage(float _damageAmount)
+    //敌人收到攻击,粒子效果,可在emeny里override
+    public virtual void TakenHit(float damage,Vector3 hitPoint,Vector3 hitDirection)
+    {
+        TakenDamage(damage);
+
+    }
+
+    public virtual void TakenDamage(float _damageAmount)
     {
         health -= _damageAmount;
         if (health <= 0 && isDead == false)
         {
             Die();
         }
+    }
+    public virtual void ChangeSpeed()
+    {
+
+    }
+    public virtual void RecoverSpeed()
+    {
+
     }
 }
