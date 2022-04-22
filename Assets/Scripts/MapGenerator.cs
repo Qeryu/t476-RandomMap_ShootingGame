@@ -10,7 +10,7 @@ public class MapGenerator : MonoBehaviour
     [Header("瓦片")]
     public GameObject tilePrefab;
     public Vector2 mapSize;
-   // public Transform mapHolder;//这个在下次实例时要删除！！！
+    // public Transform mapHolder;//这个在下次实例时要删除！！！
     [Range(0, 1)] public float outlinePrecent;//瓦片之间留有缝隙去调整
     [Header("障碍物")]
     public GameObject obstaclePrefab;
@@ -27,7 +27,7 @@ public class MapGenerator : MonoBehaviour
     bool[,] mapObstacles;//该位置是否含有障碍物
     //we can store allof the tiles .sothat we can access theis positions！！！
     Transform[,] tileMap;
-   // Coordiate[] mapNotHaveObs;
+    // Coordiate[] mapNotHaveObs;
 
     //随机地图最大尺寸
     public Vector2 mapMaxSize;
@@ -47,10 +47,10 @@ public class MapGenerator : MonoBehaviour
         instance = this;
         Init();
         FindObjectOfType<Spawner>().OnNewWave += OnNewWave;//懂了，找到组件类型
-        //Init();
-         m_object= GameObject.FindGameObjectWithTag("enemyColor");
+                                                           //Init();
+        m_object = GameObject.FindGameObjectWithTag("enemyColor");
         //仙这么一写
-         m_material = m_object.GetComponent<Renderer>().sharedMaterial;
+        m_material = m_object.GetComponent<Renderer>().sharedMaterial;
         m_material.color = foregroundColor;
 
     }
@@ -58,8 +58,8 @@ public class MapGenerator : MonoBehaviour
     {
         //ChooseAMap();
         //FindObjectOfType<Spawner>().OnNewWave += OnNewWave;
-       // GenerateMap();
-       // Init();
+        // GenerateMap();
+        // Init();
 
     }
     void OnNewWave(int waveNumber)
@@ -72,7 +72,7 @@ public class MapGenerator : MonoBehaviour
         //在这里更改enemy预制体的颜色 1直接改预制体2改材质球sharedmaterial选2吧
         m_material.color = foregroundColor;
 
-     //   Init();
+        //   Init();
 
 
     }
@@ -119,13 +119,13 @@ public class MapGenerator : MonoBehaviour
             Instantiate(player, new Vector3(-mapSize.x / 2 + 0.5f + mapCenter.x, 0.5f, -mapSize.y / 2 + 0.5f + mapCenter.y), Quaternion.identity);
         else
         {
-           // Debug.Log("111");
+            // Debug.Log("111");
             //还是没有解决我这个问题
             //问题在于我的物体一开始就处于显示状态，这样移动只移动了MeshFilter,物体本身的Mesh并没有移动，依旧无用
             //player.SetActive(false);
             //   player.GetComponent<BoxCollider>().enabled=false;
             //为什么在这里不行这真的是我很大的一个疑问
-          //  player.transform.position= getTileFromPosition(Vector3.zero).position + Vector3.up * 0.5;
+            //  player.transform.position= getTileFromPosition(Vector3.zero).position + Vector3.up * 0.5;
             //更改单个需要的操作
             //  Vector3 pos = player.transform.localPosition;
             //   player.transform.position= new Vector3(-mapSize.x / 2 + 0.5f + mapCenter.x, 0.5f, -mapSize.y / 2 + 0.5f + mapCenter.y);
@@ -139,16 +139,16 @@ public class MapGenerator : MonoBehaviour
     {
         int x = Mathf.RoundToInt(position.x + mapSize.x / 2 - 0.5f);
         int y = Mathf.RoundToInt(position.z + mapSize.y / 2 - 0.5f);
-        x = Mathf.Clamp(x, 0,(int)mapSize.x - 1);
+        x = Mathf.Clamp(x, 0, (int)mapSize.x - 1);
         y = Mathf.Clamp(y, 0, (int)mapSize.y - 1);
         return tileMap[x, y];
-        
+
     }
     private void GenerateMap()
     {
-        tileMap = new Transform[(int)mapSize.x,(int)mapSize.y];
+        tileMap = new Transform[(int)mapSize.x, (int)mapSize.y];
         //重新生成空气边界墙，并摧毁之前的
-       
+
         //重要!!!!,要重新在这里面初始化
         //是这里destoy之前的然后new了一个新的
         allTilesCoord = new List<Coordiate>();
@@ -156,9 +156,9 @@ public class MapGenerator : MonoBehaviour
         if (transform.Find(holderName))
         {
             DestroyImmediate(transform.Find(holderName).gameObject);
-            
+
         }
-        
+
         Transform mapHolder = new GameObject(holderName).transform;
         mapHolder.parent = transform;
         GameObject Wallup = Instantiate(navMeshObsPrefab, Vector3.forward * (mapMaxSize.y + mapSize.y) / 4, Quaternion.identity);
@@ -195,13 +195,13 @@ public class MapGenerator : MonoBehaviour
 
         //障碍物生成
         shuffledQueue = new Queue<Coordiate>(Utilities.ShuffleCoords(allTilesCoord.ToArray()));//66666list转array，new 一个queue，IEnumerable//接口
-        int obstacleCount =(int)( mapSize.x * mapSize.y * obsPercent);
+        int obstacleCount = (int)(mapSize.x * mapSize.y * obsPercent);
         //初始化
         mapCenter = new Coordiate((int)mapSize.x / 2, (int)mapSize.y / 2);
         mapObstacles = new bool[(int)mapSize.x, (int)mapSize.y];
 
         int currentObsCount = 0;
-        
+
         for (int i = 0; i < obstacleCount; i++)
         {
             Coordiate randomCoord = GetRandomCoord();
@@ -234,7 +234,7 @@ public class MapGenerator : MonoBehaviour
             {   //这样这个点就不会被加上啦~因为洗牌算法所以不需要标记这个点永久不可碰
                 mapObstacles[randomCoord.x, randomCoord.y] = false;
                 currentObsCount--;
-                
+
             }
 
         }
@@ -244,7 +244,7 @@ public class MapGenerator : MonoBehaviour
     private bool MapIsFullyAccessible(bool[,] _mapObstacles, int _currentObsCount)
     {
         //这是嘛 ：标记点是否已经被检测过,和mapObstacles区别是，mO是用来标记这个点是否有障碍物的
-        bool[,] mapFlags = new bool[_mapObstacles.GetLength(0),_mapObstacles.GetLength(1)];
+        bool[,] mapFlags = new bool[_mapObstacles.GetLength(0), _mapObstacles.GetLength(1)];
         //所有可以行走的瓦片都放到这个队列通过先进先出挨个遍历
         //我的理解是先把所有设成可以行走然后去掉被选成障碍那些，看最新设置的这个障碍会不会使可以洪范到的点的数量没有应该的那么多
         Queue<Coordiate> queue = new Queue<Coordiate>();
@@ -256,9 +256,9 @@ public class MapGenerator : MonoBehaviour
         {
             Coordiate currentTile = queue.Dequeue();
             //通过for获得当前瓦片上下左右相邻的四个瓦片
-            for (int i = -1; i <=1; i++)
+            for (int i = -1; i <= 1; i++)
             {
-                for (int j = -1; j <=1; j++)
+                for (int j = -1; j <= 1; j++)
                 {
                     int neighborX = currentTile.x + i;
                     int neighborY = currentTile.y + j;
@@ -310,7 +310,7 @@ public struct Coordiate//坐标的意思
     public int y;
     public Coordiate(int _x, int _y)
     {
-        this.x = _x;                                                                                                                                                                 
+        this.x = _x;
         this.y = _y;
     }
     //重载运算符

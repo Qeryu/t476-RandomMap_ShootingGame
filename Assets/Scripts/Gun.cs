@@ -4,9 +4,9 @@ using System.Collections;
 public class Gun : MonoBehaviour
 {
 
-   public enum FireMode { Auto, Burst, Single };
+    public enum FireMode { Auto, Burst, Single };
     //单射有冷却时间
-   public FireMode fireMode;
+    public FireMode fireMode;
 
     public Transform[] projectileSpawn;//不同的炮口
     public Projectile projectile;
@@ -15,24 +15,24 @@ public class Gun : MonoBehaviour
     public float muzzleVelocity = 35;
     //public int burstCount=3;//
     //还有一个关键的是攻击力，这个放在projectile里区分
-  
 
-   
+
+
     [Header("Effects")]
     public Transform shell;
     public Transform shellEjection;
     public AudioClip shootAudio;
-   
-   //枪口光
+
+    //枪口光
     MuzzleFlash muzzleflash;
-  
+
 
 
     void Start()
     {
         muzzleflash = GetComponent<MuzzleFlash>();
-     
-    
+
+
     }
     /*
     void LateUpdate()在所有update发生后调用，重装枪械
@@ -73,17 +73,17 @@ public class Gun : MonoBehaviour
         }
     }
 
-  
+
 
     //这是single fire
     public void OnTriggerHold()
     {
         Shoot();
-        
+
     }
 
     public void OnTriggerRelease()
     {
-        
+
     }
 }

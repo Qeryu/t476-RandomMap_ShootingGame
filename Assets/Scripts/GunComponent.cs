@@ -9,7 +9,7 @@ public class GunComponent : MonoBehaviour
     //[SerializeField] private float fireRate = 0.1f;
     public Transform weaponHold;
     public Gun[] allGuns;
-    int gunIndex=0;
+    int gunIndex = 0;
     int gunAmount;
     public Gun gun;
     public AudioClip switchAudio;
@@ -22,20 +22,20 @@ public class GunComponent : MonoBehaviour
     }
     public void OnTriggerHold()
     {
-       
-            gun.OnTriggerHold();
-        
+
+        gun.OnTriggerHold();
+
     }
 
     public void OnTriggerRelease()
     {
-      
-            gun.OnTriggerRelease();
-        
+
+        gun.OnTriggerRelease();
+
     }
     private void Update()
     {
-        if(Input.GetMouseButton(0))
+        if (Input.GetMouseButton(0))
         {
             OnTriggerHold();
         }
@@ -56,8 +56,8 @@ public class GunComponent : MonoBehaviour
             {
                 Destroy(gun.gameObject);
             }
-            
-            gun = Instantiate(allGuns[gunIndex],weaponHold.position,weaponHold.rotation) as Gun;
+
+            gun = Instantiate(allGuns[gunIndex], weaponHold.position, weaponHold.rotation) as Gun;
             gun.transform.parent = weaponHold;
 
             gun.transform.localScale = allGuns[gunIndex].transform.localScale;

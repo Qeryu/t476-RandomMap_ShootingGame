@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
-using System.Collections;
 
 public class Enemy : LivingEntity
 {
-    public enum State {Idle,Chasing,Attacking};
+    public enum State { Idle, Chasing, Attacking };
     State currentState;
 
     //敌人死亡效果
@@ -19,7 +18,7 @@ public class Enemy : LivingEntity
     //写一下敌人攻击player
     float attackDistanceThreshold = 1.5f;
     float nextAttackTime;
-    float AttackTime=1f;
+    float AttackTime = 1f;
     float damage = 1f;
     //攻击后player变色
     Material playerSkinMaterial;
@@ -61,17 +60,17 @@ public class Enemy : LivingEntity
         }
         base.TakenHit(damage, hitPoint, hitDirection);
     }
-    
+
     public override void ChangeSpeed()
     {
-        
+
         changedSpeed = true;
         navMeshAgent.enabled = false;
         Debug.Log("jiansu2");
-        yanchiTime =3+Time.time;
+        yanchiTime = 3 + Time.time;
         attackSpeed = 0.5f;
         enemySkinMaterial.color = Color.blue;
-       
+
 
         StartCoroutine("WaitForSecond");
 
@@ -79,20 +78,20 @@ public class Enemy : LivingEntity
     IEnumerator WaitForSecond()
     {
         //3s之前
-     //差不多还是好用的
+        //差不多还是好用的
 
         yield return new WaitForSeconds(3);
         //3s之后
- 
+
         if (yanchiTime <= Time.time)
         {
-           
+
             RecoverSpeed();
-         }
-      
+        }
+
 
     }
-   
+
     public override void RecoverSpeed()
     {
         Debug.Log("444");
@@ -104,14 +103,14 @@ public class Enemy : LivingEntity
     }
     public void SetCharacteristics(float moveSpeed, float hitPower, float enemyHealth)
     {
-       
-       //只能在Start函数和Awake函数中成功的改变nav速度数值，所以不改这个了
+
+        //只能在Start函数和Awake函数中成功的改变nav速度数值，所以不改这个了
         if (hasTarget)
         {
             damage = hitPower;
         }
         maxHealth = enemyHealth;
-        
+
     }
     private void PlayerMaterialInvoke()
     {
@@ -127,7 +126,7 @@ public class Enemy : LivingEntity
             Debug.Log(originalColor);
         }
     }
-    
+
     void OnTargetDeath()
     {
         hasTarget = false;
@@ -145,14 +144,14 @@ public class Enemy : LivingEntity
     }*/
     void Update()
     {
-        
+
         //if (!target)不能这么写的啦，target会更新的啦
-        if(GameObject.FindGameObjectWithTag("Player") != null&&state==false)
+        if (GameObject.FindGameObjectWithTag("Player") != null && state == false)
         {
             state = true;
             //target = GameObject.FindGameObjectWithTag("Player").transform;
             StartCoroutine(updatePath());
-            
+
         }
 
         if (hasTarget)
@@ -190,7 +189,7 @@ public class Enemy : LivingEntity
         navMeshAgent.enabled = false;
         Vector3 originalPosition = transform.position;
         Vector3 dirToTarget = (target.position - transform.position).normalized;
-        Vector3 attackPosition = target.position-(dirToTarget*0.3f);
+        Vector3 attackPosition = target.position - (dirToTarget * 0.3f);
         playerSkinMaterial.color = Color.red;
 
         bool hasAppliedDamage = false;

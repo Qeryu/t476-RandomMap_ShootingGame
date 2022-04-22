@@ -13,11 +13,11 @@ public class Menu : MonoBehaviour
 
     void Start()
     {
-       
+
         volumeSliders[0].value = AudioManager.instance.masterVolumePercent;
         volumeSliders[1].value = AudioManager.instance.musicVolumePercent;
         volumeSliders[2].value = AudioManager.instance.sfxVolumePercent;
-        
+
     }
 
 
@@ -43,12 +43,12 @@ public class Menu : MonoBehaviour
         mainMenuHolder.SetActive(true);
         optionsMenuHolder.SetActive(false);
     }
-    
-    
+
+
 
     public void SetMasterVolume()//(float value)
     {
-       // Debug.Log(volumeSliders[0].value);
+        // Debug.Log(volumeSliders[0].value);
         AudioManager.instance.SetVolume(volumeSliders[0].value, AudioManager.AudioChannel.Master);
     }
 

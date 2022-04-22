@@ -7,14 +7,14 @@ public class Spawner : MonoBehaviour
 {
     public Enemy enemyprefab;
     public Wave[] waves;//或者使用list，dictionary
-    
+
     private Wave currentWave;
     public int currentIndex;
 
     public int waitSpawnNum;//这一波还有多少敌人没有被生成
     public int spawnAliveNum;//这一波还有多少敌人活着
     public float nextSpawnTime;//当前波数中每个敌人生成的时间间隔
-    
+
     public event System.Action<int> OnNewWave;//神奇，别的脚本可以订阅这个事件
 
     GameObject playerEntity;
@@ -61,7 +61,7 @@ public class Spawner : MonoBehaviour
         //在这里调用为何可以改变player位置此事我确实没有弄清
         playerT.position = map.getTileFromPosition(Vector3.zero).position + Vector3.up * 0.5f;
     }
-    
+
     [ContextMenu("nextwave")]
     private void NextWave()
     {
@@ -86,7 +86,7 @@ public class Spawner : MonoBehaviour
         ResetPlayerPosition();
 
 
-    } 
+    }
 
 
     private void Update()
@@ -100,7 +100,7 @@ public class Spawner : MonoBehaviour
                 campPositionOld = playerT.position;
             }
         }
-        if (waitSpawnNum > 0&&nextSpawnTime<=Time.time)
+        if (waitSpawnNum > 0 && nextSpawnTime <= Time.time)
         {
             waitSpawnNum--;
             StartCoroutine("SpawnEnemy");
@@ -144,8 +144,8 @@ public class Spawner : MonoBehaviour
 
 
         //在这之前能不能做到更改prefab的颜色，老天，我真的累了
-       //把这件事订阅到onnewwave中
-        Enemy spawnEnemy = Instantiate(enemyprefab, randomTiile.position+Vector3.up, Quaternion.identity) as Enemy;
+        //把这件事订阅到onnewwave中
+        Enemy spawnEnemy = Instantiate(enemyprefab, randomTiile.position + Vector3.up, Quaternion.identity) as Enemy;
         //每当生成新的敌人，就要将这个敌人的阵亡事件处理器，订阅到事件onDeath上
         spawnEnemy.GetComponent<Enemy>().onDeath += EnemyDeath;
         spawnEnemy.SetCharacteristics(currentWave.moveSpeed, currentWave.hitPower, currentWave.enemtHealth);
@@ -155,7 +155,7 @@ public class Spawner : MonoBehaviour
     private void EnemyDeath()
     {
         spawnAliveNum--;
-        if (spawnAliveNum <= 0&&waitSpawnNum<=0)
+        if (spawnAliveNum <= 0 && waitSpawnNum <= 0)
         {
             NextWave();
         }

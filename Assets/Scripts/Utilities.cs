@@ -8,7 +8,7 @@ public class Utilities : MonoBehaviour
     //在别的类里调用的方法
     public static T[] ShuffleCoords<T>(T[] _dataArray)
     {
-        for(int i = 0; i < _dataArray.Length; i++)
+        for (int i = 0; i < _dataArray.Length; i++)
         {
             int randomNum = Random.Range(i, _dataArray.Length);
             T temp = _dataArray[randomNum];
@@ -17,6 +17,6 @@ public class Utilities : MonoBehaviour
 
 
         }
-        return _dataArray; 
+        return _dataArray;
     }
 }

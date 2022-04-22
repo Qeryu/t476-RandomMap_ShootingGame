@@ -4,10 +4,10 @@ using UnityEngine;
 using System;
 //这是playerController和enemy的基类·（父类）
 //C#不支持多继承，只能继承一个父类，我们可以使用多个接口/一个父类配合多个接口来实现相同的效果
-public class LivingEntity : MonoBehaviour,IDamageable
+public class LivingEntity : MonoBehaviour, IDamageable
 {
     public float maxHealth;
-    [SerializeField]protected float health;//他的级别是外界不能访问但是允许继承自livingentity的子类可以访问
+    [SerializeField] protected float health;//他的级别是外界不能访问但是允许继承自livingentity的子类可以访问
     private bool isDead;
 
     //阵亡：一个事件,为啥要写成事件呢
@@ -35,7 +35,7 @@ public class LivingEntity : MonoBehaviour,IDamageable
     }
 
     //敌人收到攻击,粒子效果,可在emeny里override
-    public virtual void TakenHit(float damage,Vector3 hitPoint,Vector3 hitDirection)
+    public virtual void TakenHit(float damage, Vector3 hitPoint, Vector3 hitDirection)
     {
         TakenDamage(damage);
 
